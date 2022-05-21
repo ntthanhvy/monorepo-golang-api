@@ -1,16 +1,41 @@
 package main
 
 import (
-  "net/http"
+	"time"
+	"os"
+	"github.com/go-kit/kit/log"
+	"core-api/handler"
+	"net/http"
 
+	"github.com/joho/godotenv"
+)
 
-  "github.com/labstack/echo/v4"
+var (
+  httpAddr = ":8080"
 )
 
 func main() {
-  e := echo.New()
-  e.GET("/one/hello", func(c echo.Context) error {
-    return c.String(http.StatusOK, hello.Greet("World"))
-  })
-  _ = e.Start(":8080")
+  logger := log.NewJSONLogger(os.Stdout)
+	logger = log.WithPrefix(logger, "ts", log.DefaultTimestamp)
+
+	err := godotenv.Load(".env")
+
+	if err != nil {
+		logger.Log("dotenv", "load", "err", err)
+	}
+
+
+  server := &http.Server{
+		Handler:      handler.NewServer(logger),
+		Addr:         httpAddr,
+		ReadTimeout:  10 * time.Second,
+		WriteTimeout: 10 * time.Second,
+	}
+
+	logger.Log("http", "server", "addr", httpAddr)
+
+	if err := server.ListenAndServe(); err != nil {
+		logger.Log("http", "server", "err", err)
+		os.Exit(1)
+	}
 }
