@@ -1,0 +1,31 @@
+version: '3.8'
+
+volumes:
+  data:
+
+networks:
+  web: 
+    external: true
+
+services:
+  core-api:
+    build:
+      context: .
+      dockerfile: services/core-api/Dockerfile
+    image: core-api:develop
+    ports:
+      - "8080:8080"
+    networks:
+      - web
+    
+  process-data:
+    build:
+      context: .
+      dockerfile: services/process-data/Dockerfile
+    image: process-data:develop
+    ports:
+      - "8081:8080"
+    networks:
+      - web
+    
+      
